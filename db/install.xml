@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/quiz/accessrule/webcamproctor/db" VERSION="2025121301" COMMENT="XMLDB file for Webcam Proctoring quiz access rule plugin">
+  <TABLES>
+    <TABLE NAME="quizaccess_webcamproctor" COMMENT="Stores webcam proctoring settings per quiz">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key to quiz.id"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = proctoring enabled, 0 = disabled"/>
+        <FIELD NAME="snapshotinterval" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="60" SEQUENCE="false" COMMENT="Seconds between snapshots"/>
+        <FIELD NAME="sensitivitythreshold" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="70" SEQUENCE="false" COMMENT="Face match threshold percentage 0-100"/>
+        <FIELD NAME="blocksubmission" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = block quiz submission on verification failure"/>
+        <FIELD NAME="verifyidintegration" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = compare with AI Verify ID results"/>
+        <FIELD NAME="notifyteacher" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1 = notify course teachers on flag"/>
+        <FIELD NAME="notifyadmin" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = notify site admins on flag"/>
+        <FIELD NAME="ccemails" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Comma-separated CC email addresses"/>
+        <FIELD NAME="emailtemplate" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Custom email template HTML"/>
+        <FIELD NAME="notifyemails" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Legacy: Comma-separated notification emails"/>
+        <FIELD NAME="maxcaptures" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Maximum number of snapshots per attempt (0 = unlimited)"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="quizid" TYPE="foreign-unique" FIELDS="quizid" REFTABLE="quiz" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="quizaccess_webcamproctor_attempts" COMMENT="Tracks proctoring status for each quiz attempt">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key to quiz_attempts.id"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, processing, clean, flagged, blocked"/>
+        <FIELD NAME="baselineimageid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="FK to webcamproctor_images for baseline"/>
+        <FIELD NAME="flaggedreason" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="flaggedsnapshotid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="FK to the snapshot that triggered flag"/>
+        <FIELD NAME="lowestconfidence" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Lowest match confidence score"/>
+        <FIELD NAME="snapshotcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="verifyidstatus" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="approved, pending, rejected from Verify ID"/>
+        <FIELD NAME="verifyidmatch" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Match score against Verify ID photo"/>
+        <FIELD NAME="reviewedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="User who reviewed this attempt"/>
+        <FIELD NAME="reviewedtime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="notificationsent" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="submissionblocked" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = submission was blocked"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="quizid" TYPE="foreign" FIELDS="quizid" REFTABLE="quiz" REFFIELDS="id"/>
+        <KEY NAME="attemptid" TYPE="foreign-unique" FIELDS="attemptid" REFTABLE="quiz_attempts" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="quizid_status" UNIQUE="false" FIELDS="quizid, status"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="quizaccess_webcamproctor_images" COMMENT="Stores webcam images for proctoring">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="FK to webcamproctor_attempts.id"/>
+        <FIELD NAME="imagetype" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="snapshot" SEQUENCE="false" COMMENT="baseline or snapshot"/>
+        <FIELD NAME="imagedata" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Base64 WebP image data (compressed)"/>
+        <FIELD NAME="imagesize" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Image size in bytes"/>
+        <FIELD NAME="confidence" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Face match confidence 0-100"/>
+        <FIELD NAME="processstatus" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, processed, error"/>
+        <FIELD NAME="processresult" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON result from face matching"/>
+        <FIELD NAME="facedetected" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1 = face detected in image"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="attemptid" TYPE="foreign" FIELDS="attemptid" REFTABLE="quizaccess_webcamproctor_attempts" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="imagetype" UNIQUE="false" FIELDS="imagetype"/>
+        <INDEX NAME="processstatus" UNIQUE="false" FIELDS="processstatus"/>
+        <INDEX NAME="attemptid_imagetype" UNIQUE="false" FIELDS="attemptid, imagetype"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

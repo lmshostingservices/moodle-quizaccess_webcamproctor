@@ -1,0 +1,541 @@
+/**
+ * Webcam Proctoring - Premium Styles
+ * Aligned with essaygraderai.app Design System (HSL-based)
+ *
+ * @package    quizaccess_webcamproctor
+ * @copyright  2025 AI Grader
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+:root {
+    /* Primary - matches essaygraderai.app */
+    --wp-primary: hsl(217 91% 60%);
+    --wp-primary-hover: hsl(217 91% 55%);
+    --wp-primary-muted: hsl(217 91% 95%);
+    --wp-primary-foreground: hsl(0 0% 98%);
+
+    /* Status Colors */
+    --wp-success: hsl(142 76% 36%);
+    --wp-success-muted: hsl(142 76% 95%);
+    --wp-warning: hsl(38 92% 50%);
+    --wp-warning-muted: hsl(38 92% 95%);
+    --wp-error: hsl(0 84% 60%);
+    --wp-error-muted: hsl(0 84% 95%);
+
+    /* Backgrounds */
+    --wp-bg: hsl(0 0% 100%);
+    --wp-bg-muted: hsl(0 0% 98%);
+    --wp-bg-subtle: hsl(0 0% 96%);
+    --wp-bg-card: hsl(0 0% 100%);
+
+    /* Borders */
+    --wp-border: hsl(0 0% 89%);
+    --wp-border-muted: hsl(0 0% 93%);
+
+    /* Text */
+    --wp-text: hsl(0 0% 9%);
+    --wp-text-muted: hsl(217 8% 35%);
+    --wp-text-subtle: hsl(217 8% 55%);
+    --wp-text-inverse: hsl(0 0% 98%);
+
+    /* Border Radius */
+    --wp-radius-sm: 0.375rem;
+    --wp-radius: 0.5rem;
+    --wp-radius-lg: 0.75rem;
+
+    /* Shadows */
+    --wp-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+    --wp-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+    --wp-shadow-glow: 0 0 0 3px hsl(217 91% 60% / 0.15);
+
+    /* Spacing */
+    --wp-space-1: 0.25rem;
+    --wp-space-2: 0.5rem;
+    --wp-space-3: 0.75rem;
+    --wp-space-4: 1rem;
+    --wp-space-5: 1.25rem;
+    --wp-space-6: 1.5rem;
+
+    /* Typography */
+    --wp-font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --wp-text-xs: 0.75rem;
+    --wp-text-sm: 0.875rem;
+    --wp-text-base: 1rem;
+    --wp-text-lg: 1.125rem;
+}
+
+/* Report page styles */
+.webcamproctor-thumbnail:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+.webcamproctor-report-table td {
+    vertical-align: middle;
+}
+
+/* Dark Mode */
+.wp-dark,
+.dark .webcamproctor-container {
+    --wp-bg: hsl(0 0% 7%);
+    --wp-bg-muted: hsl(0 0% 9%);
+    --wp-bg-subtle: hsl(0 0% 11%);
+    --wp-bg-card: hsl(0 0% 9%);
+    --wp-border: hsl(0 0% 18%);
+    --wp-text: hsl(0 0% 98%);
+    --wp-text-muted: hsl(217 8% 65%);
+}
+
+/* Container */
+.webcamproctor-container,
+.quizaccess_webcamproctor {
+    font-family: var(--wp-font-sans);
+    color: var(--wp-text);
+    -webkit-font-smoothing: antialiased;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Preflight Check — form elements */
+.webcamproctor-message {
+    margin-bottom: 15px;
+    font-size: var(--wp-text-sm);
+    color: var(--wp-text-muted);
+}
+
+.webcamproctor-preview-container {
+    position: relative;
+    display: inline-block;
+    width: 320px;
+    height: 240px;
+    border: 3px dashed var(--wp-border);
+    border-radius: var(--wp-radius-lg);
+    overflow: hidden;
+    background: var(--wp-bg-subtle);
+}
+
+.webcamproctor-preview-container.face-detected {
+    border-color: var(--wp-success);
+    border-style: solid;
+}
+
+.webcamproctor-preview-container.no-face {
+    border-color: var(--wp-error);
+}
+
+#webcamproctor-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.face-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 180px;
+    border: 3px dashed var(--wp-success);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.webcamproctor-preview-container.face-detected .face-indicator {
+    opacity: 1;
+    animation: webcamproctor-pulse 1.5s infinite;
+}
+
+@keyframes webcamproctor-pulse {
+    0%, 100% { border-color: var(--wp-success); }
+    50% { border-color: hsl(160 64% 46%); }
+}
+
+.webcamproctor-status {
+    margin: 10px 0;
+    min-height: 24px;
+    font-size: var(--wp-text-sm);
+}
+
+.webcamproctor-status.success {
+    color: var(--wp-success);
+}
+
+.webcamproctor-status.error {
+    color: var(--wp-error);
+}
+
+.webcamproctor-status.warning {
+    color: var(--wp-warning);
+}
+
+.webcamproctor-controls {
+    margin-top: 15px;
+}
+
+#webcamproctor-capture {
+    padding: 10px 24px;
+    font-size: var(--wp-text-base);
+}
+
+#webcamproctor-capture:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Preflight Check — premium card layout */
+.wp-preflight {
+    background: var(--wp-bg-card);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--wp-radius-lg);
+    padding: var(--wp-space-6);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.wp-preflight-header {
+    text-align: center;
+    margin-bottom: var(--wp-space-5);
+}
+
+.wp-preflight-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--wp-primary-muted);
+    border-radius: var(--wp-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--wp-space-3);
+    color: var(--wp-primary);
+    font-size: 24px;
+}
+
+.wp-preflight-title {
+    font-size: var(--wp-text-lg);
+    font-weight: 600;
+    color: var(--wp-text);
+    margin: 0 0 var(--wp-space-1) 0;
+}
+
+.wp-preflight-desc {
+    font-size: var(--wp-text-sm);
+    color: var(--wp-text-muted);
+    margin: 0;
+}
+
+/* Camera Preview */
+.wp-camera-wrap {
+    background: hsl(0 0% 5%);
+    border-radius: var(--wp-radius);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: var(--wp-space-4);
+    aspect-ratio: 4/3;
+}
+
+.wp-camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+.wp-camera-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--wp-space-2);
+    color: hsl(0 0% 60%);
+}
+
+.wp-camera-placeholder i {
+    font-size: 40px;
+}
+
+.wp-camera-placeholder span {
+    font-size: var(--wp-text-sm);
+}
+
+/* Status Indicators */
+.wp-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--wp-space-2);
+    margin-bottom: var(--wp-space-5);
+}
+
+.wp-status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--wp-space-3);
+    padding: var(--wp-space-3);
+    background: var(--wp-bg-muted);
+    border-radius: var(--wp-radius);
+    border: 1px solid var(--wp-border-muted);
+}
+
+.wp-status-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.wp-status-icon.pending {
+    background: var(--wp-bg-subtle);
+    color: var(--wp-text-subtle);
+}
+
+.wp-status-icon.success {
+    background: var(--wp-success-muted);
+    color: var(--wp-success);
+}
+
+.wp-status-icon.error {
+    background: var(--wp-error-muted);
+    color: var(--wp-error);
+}
+
+.wp-status-label {
+    flex: 1;
+    font-size: var(--wp-text-sm);
+    font-weight: 500;
+    color: var(--wp-text);
+}
+
+.wp-status-value {
+    font-size: var(--wp-text-xs);
+    color: var(--wp-text-muted);
+}
+
+/* Buttons */
+.wp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--wp-space-2);
+    padding: var(--wp-space-2) var(--wp-space-4);
+    border-radius: var(--wp-radius);
+    font-family: var(--wp-font-sans);
+    font-size: var(--wp-text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 150ms ease;
+    width: 100%;
+}
+
+.wp-btn-primary {
+    background: var(--wp-primary);
+    color: var(--wp-primary-foreground);
+    border-color: var(--wp-primary);
+}
+
+.wp-btn-primary:hover:not(:disabled) {
+    background: var(--wp-primary-hover);
+}
+
+.wp-btn-secondary {
+    background: var(--wp-bg);
+    color: var(--wp-text);
+    border-color: var(--wp-border);
+}
+
+.wp-btn-secondary:hover:not(:disabled) {
+    background: var(--wp-bg-muted);
+}
+
+.wp-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Runtime Overlay */
+.wp-overlay {
+    position: fixed;
+    top: var(--wp-space-4);
+    right: var(--wp-space-4);
+    z-index: 1000;
+}
+
+.wp-mini-cam {
+    width: 160px;
+    background: var(--wp-bg-card);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--wp-radius);
+    overflow: hidden;
+    box-shadow: var(--wp-shadow-md);
+}
+
+.wp-mini-cam-video {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    transform: scaleX(-1);
+    display: block;
+}
+
+.wp-mini-cam-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--wp-space-1);
+    padding: var(--wp-space-2);
+    font-size: var(--wp-text-xs);
+    font-weight: 500;
+}
+
+.wp-mini-cam-status.recording {
+    background: var(--wp-error-muted);
+    color: var(--wp-error);
+}
+
+.wp-mini-cam-status.recording::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--wp-error);
+    border-radius: 50%;
+    animation: wp-pulse 1.5s infinite;
+}
+
+@keyframes wp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Report Page */
+.wp-report {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--wp-space-6);
+}
+
+.wp-report-header {
+    margin-bottom: var(--wp-space-6);
+}
+
+.wp-report-title {
+    font-size: var(--wp-text-lg);
+    font-weight: 600;
+    color: var(--wp-text);
+    margin: 0 0 var(--wp-space-1) 0;
+}
+
+.wp-report-meta {
+    font-size: var(--wp-text-sm);
+    color: var(--wp-text-muted);
+}
+
+.wp-report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--wp-space-4);
+    margin-bottom: var(--wp-space-6);
+}
+
+.wp-report-stat {
+    background: var(--wp-bg-card);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--wp-radius);
+    padding: var(--wp-space-4);
+}
+
+.wp-report-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--wp-text);
+    margin-bottom: var(--wp-space-1);
+}
+
+.wp-report-stat-label {
+    font-size: var(--wp-text-xs);
+    color: var(--wp-text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Snapshot Grid */
+.wp-snapshots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--wp-space-3);
+}
+
+.wp-snapshot {
+    background: var(--wp-bg-card);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--wp-radius);
+    overflow: hidden;
+}
+
+.wp-snapshot img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+}
+
+.wp-snapshot-info {
+    padding: var(--wp-space-2);
+    font-size: var(--wp-text-xs);
+    color: var(--wp-text-muted);
+    text-align: center;
+}
+
+/* Badge */
+.wp-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--wp-space-1) var(--wp-space-2);
+    border-radius: var(--wp-radius-sm);
+    font-size: var(--wp-text-xs);
+    font-weight: 500;
+}
+
+.wp-badge-success {
+    background: var(--wp-success-muted);
+    color: var(--wp-success);
+}
+
+.wp-badge-warning {
+    background: var(--wp-warning-muted);
+    color: var(--wp-warning);
+}
+
+.wp-badge-error {
+    background: var(--wp-error-muted);
+    color: var(--wp-error);
+}
+
+/* Alert */
+.wp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--wp-space-3);
+    padding: var(--wp-space-3);
+    border-radius: var(--wp-radius);
+    font-size: var(--wp-text-sm);
+    margin-bottom: var(--wp-space-4);
+}
+
+.wp-alert-warning {
+    background: var(--wp-warning-muted);
+    color: hsl(38 80% 35%);
+    border: 1px solid hsl(38 92% 70%);
+}
+
+.wp-alert-error {
+    background: var(--wp-error-muted);
+    color: hsl(0 70% 45%);
+    border: 1px solid hsl(0 84% 80%);
+}

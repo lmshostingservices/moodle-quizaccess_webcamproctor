@@ -1,0 +1,9 @@
+{
+  "component": "quizaccess_webcamproctor",
+  "version": "2.1.2",
+  "numeric_version": "2026042200012",
+  "build_id": "fbd67601f49bc69e",
+  "build_timestamp": "2026-04-22T07:07:50.354Z",
+  "folder": "quizaccess_webcamproctor",
+  "verification": "amd_encoding_fix_non_ascii_clean"
+}
