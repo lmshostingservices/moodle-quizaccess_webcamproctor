@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'quizaccess_webcamproctor';
-$plugin->version   = 2026060400016;
+$plugin->version   = 2026060400;
 $plugin->requires  = 2023042400;   // Moodle 4.2+
 $plugin->supported  = [402, 500];  // Moodle 4.2 to 5.x
 $plugin->maturity  = MATURITY_STABLE;
