@@ -32,7 +32,6 @@ use mod_quiz\form\preflight_check_form;
  * A rule implementing webcam proctoring for quiz attempts.
  */
 class quizaccess_webcamproctor extends access_rule_base {
-
     /**
      * Return an appropriate string to describe this rule.
      *

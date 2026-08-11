@@ -699,10 +699,10 @@ if ($attemptid) {
 }
 
 $PAGE->requires->js_amd_inline("
-    require([], function() {
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('[data-toggle=\"modal\"]').forEach(function(img) {
-                img.addEventListener('click', function() {
+    require([], function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-toggle=\"modal\"]').forEach(function (img) {
+                img.addEventListener('click', function () {
                     document.getElementById('modalImage').src = this.getAttribute('data-image');
                     document.getElementById('imageModalTitle').textContent = this.getAttribute('data-title') || 'Image';
                 });

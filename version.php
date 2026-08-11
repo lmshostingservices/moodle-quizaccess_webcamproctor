@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'quizaccess_webcamproctor';
-$plugin->version   = 2026060400015;
+$plugin->version   = 2026060400016;
 $plugin->requires  = 2023042400;   // Moodle 4.2+
 $plugin->supported  = [402, 500];  // Moodle 4.2 to 5.x
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.2.2'; // SAVEPOINT-BUMP v2.2.1: no-op savepoint marker for clean upgrade path. No DB schema changes.; // VERIFY-ID-INTEGRATION: Report now shows full Verify ID comparison (selfie, gov ID doc, scores, extracted name, doc type) alongside proctoring snapshots. Fixed wrong table name (local_verifyid_verifications → verifyid_attempts) and wrong column names (selfiedata → selfie, status approved → verified). Summary table has Verify ID status badge + score column. CSV export includes Verify ID Status, Score, Face Match, Name Match, Extracted Name, Document Type. No DB schema changes.
+$plugin->release   = '2.2.3'; // SAVEPOINT-BUMP v2.2.1: no-op savepoint marker for clean upgrade path. No DB schema changes.; // VERIFY-ID-INTEGRATION: Report now shows full Verify ID comparison (selfie, gov ID doc, scores, extracted name, doc type) alongside proctoring snapshots. Fixed wrong table name (local_verifyid_verifications → verifyid_attempts) and wrong column names (selfiedata → selfie, status approved → verified). Summary table has Verify ID status badge + score column. CSV export includes Verify ID Status, Score, Face Match, Name Match, Extracted Name, Document Type. No DB schema changes.
