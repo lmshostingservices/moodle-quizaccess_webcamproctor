@@ -1,9 +1,9 @@
 {
   "component": "quizaccess_webcamproctor",
-  "version": "2.2.3",
-  "numeric_version": "2026060400",
-  "build_id": "9caf0bf53798d3a5",
-  "build_timestamp": "2026-08-11T00:00:00.000Z",
+  "version": "2.1.2",
+  "numeric_version": "2026042200012",
+  "build_id": "fbd67601f49bc69e",
+  "build_timestamp": "2026-04-22T07:07:50.354Z",
   "folder": "quizaccess_webcamproctor",
-  "verification": "10digit-migration-2.2.3"
+  "verification": "amd_encoding_fix_non_ascii_clean"
 }
