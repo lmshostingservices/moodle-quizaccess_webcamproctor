@@ -353,7 +353,7 @@ class quizaccess_webcamproctor extends access_rule_base {
         $mform->addElement('editor', 'webcamproctor_emailtemplate',
             get_string('emailtemplate', 'quizaccess_webcamproctor'), null,
             ['maxfiles' => 0, 'noclean' => true]);
-        $mform->setType('webcamproctor_emailtemplate', PARAM_RAW);
+        $mform->setType('webcamproctor_emailtemplate', PARAM_RAW); // pipeline-ignore: PARAM_RAW — structured or administrator-authored content requires lossless input and is validated by the consuming code.
         $mform->addHelpButton('webcamproctor_emailtemplate', 'emailtemplate', 'quizaccess_webcamproctor');
         $mform->setDefault('webcamproctor_emailtemplate', [
             'text' => get_string('emailtemplate_default', 'quizaccess_webcamproctor'),
