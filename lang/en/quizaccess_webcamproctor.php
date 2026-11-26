@@ -22,194 +22,165 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Webcam Proctoring';
-$string['webcamproctoring'] = 'Enable webcam proctoring';
-$string['webcamproctoring_help'] = 'If enabled, students must grant webcam access before the quiz begins. A baseline photo is captured at the start of the attempt and all subsequent periodic snapshots are compared against this baseline using AI face-matching to verify the same person remains in front of the camera throughout.
+$string['ai_noservice_notice'] = 'No face-matching service is set up, so snapshots are kept for you to review but are not checked by AI and no attempt is flagged automatically.';
+$string['ai_paused_notice'] = 'AI face matching is paused by the site administrator. Snapshots are kept for you to review but are not checked by AI.';
+$string['attempt_blocked'] = 'On hold';
+$string['attempt_clean'] = 'Verified';
+$string['attempt_details'] = 'Attempt details';
+$string['attempt_flagged'] = 'Flagged for review';
+$string['attempt_held'] = 'On hold';
+$string['attempt_pending'] = 'Not yet reviewed';
+$string['back_to_attempts'] = 'Back to all attempts';
+$string['baseline_photo'] = 'Baseline photo';
+$string['baseline_required'] = 'Take your verification photo with the camera before starting the quiz.';
+$string['blocksubmission'] = 'Put flagged attempts on hold';
+$string['blocksubmission_help'] = 'If enabled, when the face-matching service flags an attempt, the student cannot continue or submit it until a teacher reviews the photos and releases it in the proctoring report. If disabled, flagged attempts carry on normally and are marked for review.
 
-Snapshot interval controls how frequently images are captured (e.g., every 30, 60, or 120 seconds). Face match sensitivity sets how strict the comparison is — higher values flag more attempts for review. Maximum snapshots caps the total images per attempt, or can be set to unlimited for continuous monitoring.
-
-Teachers choose whether a failed verification blocks quiz submission outright, or allows submission but flags the attempt for review. Email notifications can be sent automatically to course teachers, site administrators, and additional CC addresses when an attempt is flagged. A customisable email template is provided with placeholders for student name, quiz, course, confidence score, flag reason, and a direct link to the proctoring report.
-
-The proctoring report shows all captured snapshots with their AI confidence scores and processing status (pass, flag, or error), a summary of flagged events, and a CSV export of the full session. Integration with AI Verify ID allows snapshots to be compared against the student\'s pre-verified government ID photo for higher-confidence identity assurance.';
-
-// Quiz settings.
-$string['snapshotinterval'] = 'Snapshot interval';
-$string['snapshotinterval_help'] = 'How often to capture webcam snapshots during the quiz. Lower values provide more security but use more storage.';
-$string['sensitivitythreshold'] = 'Face match sensitivity';
-$string['sensitivitythreshold_help'] = 'How strict the face matching should be. Higher values are more strict and may flag more attempts for review.';
-$string['blocksubmission'] = 'Block submission on verification failure';
-$string['blocksubmission_help'] = 'If enabled, students cannot submit the quiz if webcam verification fails. If disabled, the quiz can be submitted but flagged for teacher review.';
-$string['verifyidintegration'] = 'Compare with AI Verify ID';
-$string['verifyidintegration_help'] = 'If enabled, webcam snapshots will be compared against the student\'s verified ID photo from the AI Verify ID plugin to ensure the same person is taking the quiz.';
-$string['notificationsettings'] = 'Notification Settings';
-$string['notifyteacher'] = 'Notify course teachers';
-$string['notifyteacher_help'] = 'Send email notification to course teachers when an attempt is flagged.';
-$string['notifyadmin'] = 'Notify site administrators';
-$string['notifyadmin_help'] = 'Send email notification to site administrators when an attempt is flagged.';
+No attempt is put on hold when AI face matching is paused or no service is set up.';
+$string['camera'] = 'Camera';
+$string['camera_dark'] = 'The picture is too dark or blank, or the camera is covered. Check your lighting and camera.';
+$string['camera_lost'] = 'Camera lost: proctoring interrupted';
+$string['camera_off'] = 'The camera is off. Select "Turn on camera" to begin.';
+$string['camera_on'] = 'Camera on. Checking the picture...';
+$string['camera_preview'] = 'Camera preview';
+$string['camera_ready'] = 'Ready. Look at the camera and take your photo.';
+$string['camera_reconnecting'] = 'Reconnecting camera (try {$a->attempt} of {$a->max})';
+$string['camera_start'] = 'Turn on camera';
 $string['ccemails'] = 'CC email addresses';
 $string['ccemails_help'] = 'Comma-separated list of additional email addresses to notify when an attempt is flagged.';
-$string['emailtemplate'] = 'Custom email template';
-$string['emailtemplate_help'] = 'Customise the notification email. Available placeholders: {student}, {quiz}, {course}, {confidence}, {reason}, {reporturl}';
-$string['emailtemplate_default'] = '<h2>Proctoring Alert: Suspicious Activity Detected</h2>
-
-<p>Dear Instructor,</p>
-
-<p>A quiz attempt has been flagged for review due to potential identity verification issues.</p>
-
-<table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 20px 0;">
-<tr style="background: #f8fafc;">
-<td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold;">Student</td>
-<td style="padding: 12px; border: 1px solid #e2e8f0;">{student}</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold;">Quiz</td>
-<td style="padding: 12px; border: 1px solid #e2e8f0;">{quiz}</td>
-</tr>
-<tr style="background: #f8fafc;">
-<td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold;">Course</td>
-<td style="padding: 12px; border: 1px solid #e2e8f0;">{course}</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold;">Reason</td>
-<td style="padding: 12px; border: 1px solid #e2e8f0; color: #dc2626;">{reason}</td>
-</tr>
-<tr style="background: #f8fafc;">
-<td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold;">Confidence</td>
-<td style="padding: 12px; border: 1px solid #e2e8f0;">{confidence}%</td>
-</tr>
-</table>
-
-<p><a href="{reporturl}" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Review Attempt</a></p>
-
-<p style="color: #64748b; font-size: 14px;">Please review the captured images and compare them with the student\'s baseline photo to determine if further action is required.</p>
-
-<p>Regards,<br>
-Webcam Proctoring System</p>';
-$string['notifyemails'] = 'Notification emails';
-$string['notifyemails_help'] = 'Comma-separated list of email addresses to notify when an attempt is flagged. Leave blank to only notify course teachers.';
-
-// Preflight check.
-$string['preflight_title'] = 'Webcam Verification Required';
-$string['preflight_message'] = 'This quiz requires webcam proctoring. Please allow camera access and position your face within the green circle to verify your identity.';
-$string['preflight_consent'] = 'I understand that my webcam will be used to verify my identity during this quiz';
-$string['preflight_button'] = 'Capture Photo & Start Quiz';
-$string['preflight_retake'] = 'Retake Photo';
-$string['webcam_permission_denied'] = 'Camera access was denied. Please allow camera access to proceed with this quiz.';
-$string['webcam_not_available'] = 'No camera detected. Please connect a webcam to take this quiz.';
-$string['baseline_required'] = 'You must capture a verification photo before starting this quiz.';
-$string['consent_required'] = 'You must agree to webcam proctoring to take this quiz.';
-$string['face_detected'] = 'Face detected - you can capture your photo now';
-$string['no_face_detected'] = 'No face detected - please position your face in the frame';
-$string['multiple_faces'] = 'Multiple faces detected - please ensure only you are in the frame';
-
-// Status messages.
-$string['proctoring_active'] = 'Webcam proctoring is active. Your identity is being verified.';
-$string['snapshot_captured'] = 'Identity verification snapshot captured.';
-$string['attempt_clean'] = 'Verified - No issues detected';
-$string['attempt_flagged'] = 'Flagged for review';
-$string['attempt_pending'] = 'Processing...';
-$string['attempt_processing'] = 'Verifying identity...';
-$string['attempt_blocked'] = 'Blocked - Verification failed';
-$string['submission_blocked'] = 'Quiz submission is blocked because webcam verification failed. Please contact your teacher.';
-
-// Teacher report.
-$string['report_title'] = 'Proctoring Report';
-$string['report_heading'] = 'Webcam Proctoring Report';
-$string['report_description'] = 'Review flagged attempts and compare captured images.';
-$string['baseline_image'] = 'Baseline Photo';
-$string['flagged_snapshot'] = 'Flagged Snapshot';
-$string['all_snapshots'] = 'All Snapshots';
-$string['no_flagged_attempts'] = 'No flagged attempts to review.';
-$string['no_attempts'] = 'No proctoring attempts recorded yet.';
-$string['view_images'] = 'View Images';
-$string['view_all'] = 'View All';
-$string['mark_clean'] = 'Mark as Verified';
-$string['mark_flagged'] = 'Mark as Flagged';
-$string['filter_all'] = 'All attempts';
-$string['filter_flagged'] = 'Flagged only';
-$string['filter_clean'] = 'Verified only';
-$string['filter_pending'] = 'Pending review';
+$string['col_confidence'] = 'Lowest match';
+$string['col_finished'] = 'Attempt finished';
+$string['col_held'] = 'On hold';
+$string['col_latest'] = 'Latest snapshot';
+$string['col_reason'] = 'Flag reason';
+$string['col_snapshots'] = 'Snapshots';
+$string['col_started'] = 'Proctoring started';
+$string['col_status'] = 'Proctoring status';
+$string['col_verifyid'] = 'Verify ID';
+$string['col_verifyidscore'] = 'Verify ID score';
 $string['confidence_score'] = 'Match confidence: {$a}%';
-$string['flagged_reason'] = 'Reason: {$a}';
-$string['reviewed_by'] = 'Reviewed by {$a->user} on {$a->time}';
-$string['snapshot_count'] = '{$a} snapshots';
-$string['verifyid_status'] = 'Verify ID: {$a}';
-$string['verifyid_match'] = 'ID Match: {$a}%';
-$string['verifyid_section'] = 'AI Verify ID Comparison';
-$string['verifyid_photo'] = 'Verified ID Photo';
-$string['verifyid_not_completed'] = 'Student has not completed ID verification';
-
-// Report actions.
-$string['submission_unblocked'] = 'Submission unblocked';
-$string['unblock_submission'] = 'Unblock Submission';
-$string['attempt_details'] = 'Attempt Details';
-$string['back_to_attempts'] = 'Back to all attempts';
-$string['baseline_photo'] = 'Baseline Photo';
-$string['snapshot_image'] = 'Snapshot';
-
-// Flagged reasons.
-$string['reason_face_mismatch'] = 'Face does not match baseline photo';
-$string['reason_no_face'] = 'No face detected in snapshot';
-$string['reason_multiple_faces'] = 'Multiple faces detected';
-$string['reason_low_confidence'] = 'Low confidence face match';
-$string['reason_verifyid_mismatch'] = 'Face does not match verified ID photo';
-
-// Notifications.
-$string['notification_subject'] = 'Proctoring Alert: Flagged Attempt in {$a->quiz}';
+$string['consent_required'] = 'You must agree to webcam proctoring to take this quiz.';
+$string['emailtemplate'] = 'Custom email template';
+$string['emailtemplate_help'] = 'Leave empty to use the standard message. Available placeholders: {student}, {quiz}, {course}, {confidence}, {reason}, {reporturl}';
+$string['enlarge'] = 'Enlarge: {$a}';
+$string['error_no_camera'] = 'The camera could not be started. Check that no other app is using it, then try again.';
+$string['exportcsv'] = 'Export to CSV';
+$string['filter_all'] = 'All attempts';
+$string['filter_clean'] = 'Verified';
+$string['filter_flagged'] = 'Flagged';
+$string['filter_pending'] = 'Not yet reviewed';
+$string['image_error'] = 'could not be checked';
+$string['image_unverified'] = 'not checked by AI';
+$string['mark_clean'] = 'Mark as verified';
+$string['mark_flagged'] = 'Mark as flagged';
+$string['maxcaptures'] = 'Maximum snapshots';
+$string['maxcaptures_help'] = 'The maximum number of snapshots to capture per attempt. Set to unlimited for continuous monitoring throughout the quiz.';
+$string['messageprovider:flaggedattempt'] = 'Quiz attempt flagged by webcam proctoring';
+$string['no_attempts'] = 'No proctored attempts yet.';
+$string['notice_ai'] = 'Each snapshot is sent to {$a->processor} and compared with your baseline photo by AI face matching. A low match flags the attempt for your teacher to review.';
+$string['notice_ai_paused'] = 'AI face matching is currently paused on this site. Your photos are only seen by staff.';
+$string['notice_baseline'] = 'A baseline photo is taken now, before you start.';
+$string['notice_retention'] = 'Photos are kept for {$a->retention} and then deleted automatically.';
+$string['notice_review'] = 'Only staff who can view the proctoring report see your photos. A teacher makes any decision about your attempt, not the AI.';
+$string['notice_rights'] = 'You can ask your institution for a copy of your photos or for them to be deleted.';
+$string['notice_snapshots'] = 'Snapshots are taken at random times, about every {$a->interval}, while your attempt is open.';
 $string['notification_body'] = '<p>A quiz attempt has been flagged for review.</p>
 <p><strong>Student:</strong> {$a->student}<br>
 <strong>Quiz:</strong> {$a->quiz}<br>
 <strong>Course:</strong> {$a->course}<br>
-<strong>Match Confidence:</strong> {$a->confidence}%<br>
+<strong>Match confidence:</strong> {$a->confidence}%<br>
 <strong>Reason:</strong> {$a->reason}</p>
-<p><a href="{$a->reporturl}">Click here to review the attempt</a></p>';
-$string['messageprovider:flaggedattempt'] = 'Notification when a quiz attempt is flagged by webcam proctoring';
-
-// Tasks.
+<p><a href="{$a->reporturl}">Review the attempt</a></p>';
+$string['notification_subject'] = 'Proctoring alert: flagged attempt in {$a->quiz}';
+$string['notifyadmin'] = 'Notify site administrators';
+$string['notifyadmin_help'] = 'Send a notification to site administrators when an attempt is flagged.';
+$string['notifyteacher'] = 'Notify course teachers';
+$string['notifyteacher_help'] = 'Send a notification to course teachers when an attempt is flagged.';
+$string['photo_taken'] = 'Photo taken. You can retake it or start the quiz.';
+$string['plugindescription'] = 'This quiz uses webcam proctoring. You will be asked to allow camera access and take a photo before you start.';
+$string['pluginname'] = 'Webcam Proctoring';
+$string['preflight_button'] = 'Take photo';
+$string['preflight_consent'] = 'I have read the above and agree to webcam proctoring for this quiz.';
+$string['preflight_message'] = 'This quiz uses webcam proctoring. Please read how your photos are used before you agree.';
+$string['preflight_retake'] = 'Retake photo';
+$string['preflight_title'] = 'Webcam proctoring';
+$string['privacy:attempt'] = 'Attempt {$a}';
+$string['privacy:metadata:attempts'] = 'Proctoring record for each quiz attempt.';
+$string['privacy:metadata:attempts:attemptid'] = 'The quiz attempt being proctored.';
+$string['privacy:metadata:attempts:flaggedreason'] = 'Why the attempt was flagged.';
+$string['privacy:metadata:attempts:lowestconfidence'] = 'The lowest face-match score in the attempt.';
+$string['privacy:metadata:attempts:reviewedby'] = 'The staff member who reviewed the attempt.';
+$string['privacy:metadata:attempts:reviewedtime'] = 'When the attempt was reviewed.';
+$string['privacy:metadata:attempts:snapshotcount'] = 'How many snapshots were taken.';
+$string['privacy:metadata:attempts:status'] = 'The review status of the attempt.';
+$string['privacy:metadata:attempts:timecreated'] = 'When proctoring started.';
+$string['privacy:metadata:attempts:userid'] = 'The student whose attempt is proctored.';
+$string['privacy:metadata:facecompare'] = 'Webcam photos are sent to the face-matching service set up by the site administrator, which compares each snapshot with the baseline photo.';
+$string['privacy:metadata:facecompare:baseline'] = 'The baseline photo of the student.';
+$string['privacy:metadata:facecompare:snapshot'] = 'A webcam snapshot taken during the attempt.';
+$string['privacy:metadata:images'] = 'Webcam photos taken for identity verification.';
+$string['privacy:metadata:images:confidence'] = 'The face-match score for the photo.';
+$string['privacy:metadata:images:imagedata'] = 'The photo itself.';
+$string['privacy:metadata:images:imagetype'] = 'Whether the photo is the baseline or a snapshot.';
+$string['privacy:metadata:images:processstatus'] = 'Whether the photo was checked.';
+$string['privacy:metadata:images:timecreated'] = 'When the photo was taken.';
+$string['processor_default'] = 'the face-matching service used by this site';
+$string['proctoring_active'] = 'Webcam proctoring is on';
+$string['proctoring_active_count'] = 'Webcam proctoring is on ({$a} snapshots)';
+$string['proctoring_complete'] = 'Webcam proctoring complete ({$a} snapshots)';
+$string['reason_camera_lost'] = 'Camera stopped working during the attempt';
+$string['reason_low_confidence'] = 'Low face-match confidence';
+$string['reason_low_confidence_value'] = 'Face-match confidence ({$a}%) below the threshold';
+$string['reason_no_face'] = 'No face detected';
+$string['report_description'] = 'Review flagged attempts and compare captured images. AI scores are a guide only: check the photos before marking an attempt.';
+$string['report_heading'] = 'Webcam proctoring report';
+$string['report_title'] = 'Proctoring report';
+$string['retention_never'] = 'Keep until deleted by hand';
+$string['retention_never_short'] = 'until your institution deletes them';
+$string['reviewed_by'] = 'Reviewed by {$a->user} on {$a->time}';
+$string['sensitivitythreshold'] = 'Face match sensitivity';
+$string['sensitivitythreshold_help'] = 'The minimum face-match score for a snapshot to pass. Higher values flag more attempts for review.';
+$string['setting_apikey'] = 'API key';
+$string['setting_apikey_desc'] = 'Key sent to the face-matching service in the X-API-Key header.';
+$string['setting_apiurl'] = 'Face-matching service URL';
+$string['setting_apiurl_desc'] = 'Base URL of the face-matching service. Photos are posted to {URL}/api/face-compare. Leave empty to keep photos for human review only.';
+$string['setting_paused'] = 'Pause AI face matching';
+$string['setting_paused_desc'] = 'Stop sending photos to the face-matching service on the whole site. Photos are still taken and kept for staff review, but no attempt is flagged or put on hold automatically. Use this if the AI is not working as intended (EU AI Act Article 26(5)).';
+$string['setting_processorname'] = 'Service name shown to students';
+$string['setting_processorname_desc'] = 'Name of the company or service that compares the photos, as shown in the student notice. Leave empty for a generic description.';
+$string['setting_responsibleaiheading'] = 'Responsible AI';
+$string['setting_responsibleaiheading_desc'] = 'Webcam proctoring is a high-risk AI use under the EU AI Act (Annex III, point 3(d)). These settings help deployers keep human oversight and limit how long photos are kept.';
+$string['setting_retentiondays'] = 'Keep photos for';
+$string['setting_retentiondays_desc'] = 'Webcam photos older than this are deleted by a nightly task. Review results are kept. Students are told this period before they agree.';
+$string['setting_serviceheading'] = 'Face-matching service';
+$string['setting_serviceheading_desc'] = 'Where webcam photos are sent for AI comparison. If no service is set, photos are kept for staff to review and no attempt is flagged automatically.';
+$string['snapshot_count'] = '{$a} snapshots';
+$string['snapshot_failed'] = 'Snapshot could not be sent. Proctoring continues.';
+$string['snapshot_image'] = 'Snapshot';
+$string['snapshotinterval'] = 'Snapshot interval';
+$string['snapshotinterval_help'] = 'About how often to take a snapshot during the attempt. The exact time varies so it cannot be predicted.';
+$string['student'] = 'Student';
+$string['submission_blocked'] = 'This attempt is on hold while your teacher reviews the webcam photos. Please contact your teacher.';
+$string['submission_unblocked'] = 'Attempt released from hold';
+$string['taskcleanupimages'] = 'Delete expired webcam proctoring photos';
 $string['taskprocessimage'] = 'Process webcam proctoring images';
-$string['viewreport'] = 'View proctoring report';
-
-// Export.
-$string['exportcsv'] = 'Export to CSV';
-
-// Max captures.
-$string['maxcaptures'] = 'Maximum snapshots';
-$string['maxcaptures_help'] = 'The maximum number of snapshots to capture per attempt. Set to unlimited for continuous monitoring throughout the quiz.';
+$string['unblock_submission'] = 'Release hold';
 $string['unlimited'] = 'Unlimited';
-
-// Admin settings.
-$string['settings_heading'] = 'Webcam Proctoring Settings';
-$string['default_snapshotinterval'] = 'Default snapshot interval';
-$string['default_snapshotinterval_desc'] = 'Default time between snapshot captures for new quizzes.';
-$string['default_threshold'] = 'Default sensitivity threshold';
-$string['default_threshold_desc'] = 'Default face matching sensitivity for new quizzes.';
-$string['image_quality'] = 'Image quality';
-$string['image_quality_desc'] = 'WebP compression quality (0-100). Lower values create smaller files but lower quality images.';
-$string['max_image_width'] = 'Maximum image width';
-$string['max_image_width_desc'] = 'Images will be resized to this maximum width to save storage space.';
-
-// Errors.
-$string['error_saving_image'] = 'Error saving webcam image. Please try again.';
-$string['error_processing'] = 'Error processing webcam image.';
-$string['error_no_camera'] = 'Unable to access camera. Please check your camera permissions.';
-$string['error_api'] = 'Face verification service temporarily unavailable. Please try again.';
-
-// Privacy.
-$string['privacy:metadata:quizaccess_webcamproctor_attempts'] = 'Stores proctoring attempt records during quiz attempts.';
-$string['privacy:metadata:quizaccess_webcamproctor_attempts:userid'] = 'The ID of the user whose quiz attempt is being proctored.';
-$string['privacy:metadata:quizaccess_webcamproctor_attempts:timecreated'] = 'The time when the proctoring session was started.';
-$string['privacy:metadata:quizaccess_webcamproctor_images'] = 'Stores webcam images captured during quiz attempts for identity verification.';
-$string['privacy:metadata:quizaccess_webcamproctor_images:attemptid'] = 'The ID of the proctoring attempt this image belongs to.';
-$string['privacy:metadata:quizaccess_webcamproctor_images:imagedata'] = 'The base64-encoded webcam image data.';
-$string['privacy:metadata:quizaccess_webcamproctor_images:timecreated'] = 'The time when the image was captured.';
-$string['privacy:metadata:quizaccess_webcamproctor_images:confidence'] = 'The AI face matching confidence score as a percentage.';
-$string['privacy:metadata:quizaccess_webcamproctor_images:processstatus'] = 'The processing status: pending, processed, or error.';
-$string['privacy:metadata:openai'] = 'Webcam images are sent to OpenAI for AI-powered face comparison.';
-$string['privacy:metadata:openai:webcamimage'] = 'The webcam image data sent to OpenAI for face verification.';
-
-// Capabilities.
+$string['verifyid_document'] = 'Verify ID document';
+$string['verifyid_face'] = 'Face match {$a}%';
+$string['verifyid_name'] = 'Name match {$a}%';
+$string['verifyid_not_completed'] = 'Not verified';
+$string['verifyid_overall'] = 'Overall {$a}%';
+$string['verifyid_photo'] = 'Verify ID selfie';
+$string['verifyid_section'] = 'AI Verify ID comparison';
+$string['verifyidintegration'] = 'Show AI Verify ID results';
+$string['verifyidintegration_help'] = 'If enabled, staff with the "View Verify ID photos" capability see the student\'s AI Verify ID result next to the proctoring photos.';
+$string['view_all'] = 'View all';
+$string['viewreport'] = 'View proctoring report';
+$string['webcam_not_available'] = 'No camera found. Connect a webcam and try again.';
+$string['webcam_permission_denied'] = 'Camera access was blocked. Allow camera access in your browser settings, then try again.';
+$string['webcamproctor:manageattempts'] = 'Review and release proctored attempts';
 $string['webcamproctor:viewreport'] = 'View webcam proctoring reports';
-$string['webcamproctor:manageattempts'] = 'Manage proctoring attempt statuses';
-
-// Plugin description.
-$string['plugindescription'] = 'Webcam proctoring is enabled for this quiz. You must allow camera access before starting. A baseline photo will be taken at the start and periodic snapshots will be captured during your attempt to verify your identity.';
+$string['webcamproctor:viewverifyid'] = 'View Verify ID photos in proctoring reports';
+$string['webcamproctoring'] = 'Enable webcam proctoring';
+$string['webcamproctoring_help'] = 'If enabled, students agree to proctoring and take a baseline photo before starting. Snapshots are taken during the attempt and, if a face-matching service is set up, compared with the baseline by AI. Attempts with a low match are flagged for a teacher to review in the proctoring report.';

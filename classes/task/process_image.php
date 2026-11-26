@@ -16,7 +16,7 @@
 
 namespace quizaccess_webcamproctor\task;
 
-defined('MOODLE_INTERNAL') || die();
+use quizaccess_webcamproctor\local\manager;
 
 /**
  * Adhoc task for processing webcam images with face matching.
@@ -39,7 +39,7 @@ class process_image extends \core\task\adhoc_task {
      * Execute the task.
      */
     public function execute(): void {
-        global $DB, $CFG;
+        global $DB;
 
         $data = $this->get_custom_data();
 
@@ -49,8 +49,10 @@ class process_image extends \core\task\adhoc_task {
         }
 
         // Get the proctoring attempt.
-        $proctorattempt = $DB->get_record('quizaccess_webcamproctor_attempts',
-            ['id' => $data->proctorattemptid]);
+        $proctorattempt = $DB->get_record(
+            'quizaccess_webcamproctor_attempts',
+            ['id' => $data->proctorattemptid]
+        );
 
         if (!$proctorattempt) {
             mtrace('Proctoring attempt not found: ' . $data->proctorattemptid);
@@ -66,8 +68,10 @@ class process_image extends \core\task\adhoc_task {
         }
 
         // Get the baseline image.
-        $baseline = $DB->get_record('quizaccess_webcamproctor_images',
-            ['id' => $proctorattempt->baselineimageid]);
+        $baseline = $DB->get_record(
+            'quizaccess_webcamproctor_images',
+            ['id' => $proctorattempt->baselineimageid]
+        );
 
         if (!$baseline) {
             mtrace('Baseline image not found for attempt: ' . $data->proctorattemptid);
@@ -75,121 +79,103 @@ class process_image extends \core\task\adhoc_task {
             return;
         }
 
-        // Get quiz settings for threshold.
-        $settings = $DB->get_record('quizaccess_webcamproctor',
-            ['quizid' => $proctorattempt->quizid]);
+        $settings = $DB->get_record('quizaccess_webcamproctor', ['quizid' => $proctorattempt->quizid]);
+        $threshold = $settings ? (int) $settings->sensitivitythreshold : 70;
 
-        $threshold = $settings ? $settings->sensitivitythreshold : 70;
-
-        // Perform face matching.
-        $result = $this->match_faces($baseline->imagedata, $image->imagedata, $threshold);
-
-        // Update image with results.
-        $image->confidence = $result['confidence'];
-        $image->processstatus = 'processed';
-        $image->processresult = json_encode($result);
-        $image->facedetected = $result['face_detected'] ? 1 : 0;
-        $DB->update_record('quizaccess_webcamproctor_images', $image);
-
-        // Update attempt if flagged.
-        if (!$result['match'] || !$result['face_detected']) {
-            $this->flag_attempt($proctorattempt, $image, $result, $settings);
+        // Paused by an administrator, or no service configured: keep the image for people to
+        // review, but do not send it anywhere and do not flag anyone.
+        $api = manager::get_api();
+        if (manager::is_paused() || $api === null) {
+            $reason = manager::is_paused() ? 'paused' : 'noservice';
+            $DB->update_record('quizaccess_webcamproctor_images', (object) [
+                'id' => $image->id,
+                'processstatus' => 'unverified',
+                'processresult' => json_encode(['unverified' => $reason, 'time' => time()]),
+            ]);
+            mtrace('Image ' . $image->id . ' left unverified (' . $reason . ')');
+            return;
         }
 
-        // Update lowest confidence score.
-        if ($result['confidence'] < ($proctorattempt->lowestconfidence ?? 100)) {
-            $DB->set_field('quizaccess_webcamproctor_attempts', 'lowestconfidence',
-                $result['confidence'], ['id' => $proctorattempt->id]);
+        $result = $this->match_faces($api, $baseline->imagedata, $image->imagedata, $threshold);
+        if (!empty($result['error'])) {
+            // A service failure is not evidence against the student: record it and move on.
+            $this->mark_image_error($image->id, $result['error']);
+            mtrace('Face matching failed for image ' . $image->id . ': ' . $result['error']);
+            return;
+        }
+
+        $DB->update_record('quizaccess_webcamproctor_images', (object) [
+            'id' => $image->id,
+            'confidence' => $result['confidence'],
+            'processstatus' => 'processed',
+            'processresult' => json_encode($result),
+            'facedetected' => $result['face_detected'] ? 1 : 0,
+        ]);
+
+        if ($proctorattempt->lowestconfidence === null || $result['confidence'] < $proctorattempt->lowestconfidence) {
+            $DB->set_field(
+                'quizaccess_webcamproctor_attempts',
+                'lowestconfidence',
+                $result['confidence'],
+                ['id' => $proctorattempt->id]
+            );
+        }
+
+        if (!$result['match'] || !$result['face_detected']) {
+            $this->flag_attempt($proctorattempt, $image, $result, $settings);
         }
 
         mtrace('Processed image ' . $image->id . ' with confidence ' . $result['confidence'] . '%');
     }
 
     /**
-     * Match faces between baseline and snapshot images.
+     * Compare a snapshot with the baseline using the configured face-matching service.
      *
-     * @param string $baselinedata Base64 baseline image.
-     * @param string $snapshotdata Base64 snapshot image.
+     * @param array $api [url, key] of the service.
+     * @param string $baselinedata Baseline image data URI.
+     * @param string $snapshotdata Snapshot image data URI.
      * @param int $threshold Match threshold percentage.
-     * @return array Match result with confidence score.
+     * @return array Result with match, confidence, face_detected, error and service details.
      */
-    private function match_faces(string $baselinedata, string $snapshotdata, int $threshold): array {
+    private function match_faces(array $api, string $baselinedata, string $snapshotdata, int $threshold): array {
         global $CFG;
+        require_once($CFG->libdir . '/filelib.php');
 
-        // Get API client configuration.
-        $apiurl = get_config('quizaccess_webcamproctor', 'apiurl');
-        $apikey = get_config('quizaccess_webcamproctor', 'apikey');
+        [$apiurl, $apikey] = $api;
+        $endpoint = rtrim($apiurl, '/') . '/api/face-compare';
 
-        if (empty($apiurl) || empty($apikey)) {
-            // Use default Essay Grader AI API.
-            $apiurl = get_config('local_moodlesupport', 'apiurl');
-            $apikey = get_config('local_moodlesupport', 'apikey');
+        $curl = new \curl();
+        $curl->setHeader(['Content-Type: application/json', 'X-API-Key: ' . $apikey]);
+        $response = $curl->post($endpoint, json_encode([
+            'baseline' => $baselinedata,
+            'snapshot' => $snapshotdata,
+            'threshold' => $threshold,
+        ]), ['CURLOPT_TIMEOUT' => 30]);
+        $httpcode = (int) ($curl->get_info()['http_code'] ?? 0);
+
+        if ($curl->get_errno()) {
+            return ['error' => 'cURL error: ' . $curl->error];
+        }
+        if ($httpcode !== 200) {
+            return ['error' => 'HTTP ' . $httpcode];
+        }
+        $data = json_decode($response, true);
+        if (!is_array($data) || !isset($data['confidence']) || !is_numeric($data['confidence'])) {
+            return ['error' => 'Invalid response'];
         }
 
-        if (empty($apiurl) || empty($apikey)) {
-            mtrace('No API configured for face matching — marking as unverified (fail closed)');
-            return [
-                'match' => false,
-                'confidence' => 0,
-                'face_detected' => true,
-                'error' => 'No face-matching API configured',
-                'unverified' => true,
-            ];
-        }
-
-        try {
-            $endpoint = rtrim($apiurl, '/') . '/api/face-compare';
-
-            $postdata = json_encode([
-                'baseline' => $baselinedata,
-                'snapshot' => $snapshotdata,
-                'threshold' => $threshold,
-            ]);
-
-            // Use Moodle's curl wrapper which respects proxy settings and SSL configuration.
-            $curl = new \curl();
-            $curl->setHeader([
-                'Content-Type: application/json',
-                'X-API-Key: ' . $apikey,
-            ]);
-            $response = $curl->post($endpoint, $postdata, [
-                'CURLOPT_TIMEOUT' => 30,
-            ]);
-            $info = $curl->get_info();
-            $httpcode = $info['http_code'] ?? 0;
-            $error = $curl->error;
-
-            if ($error) {
-                throw new \Exception('cURL error: ' . $error);
-            }
-
-            if ($httpcode !== 200) {
-                throw new \Exception('API returned HTTP ' . $httpcode);
-            }
-
-            $result = json_decode($response, true);
-
-            if (!$result || !isset($result['confidence'])) {
-                throw new \Exception('Invalid API response');
-            }
-
-            return [
-                'match' => ($result['confidence'] >= $threshold),
-                'confidence' => (int) $result['confidence'],
-                'face_detected' => $result['face_detected'] ?? true,
-                'error' => null,
-            ];
-
-        } catch (\Exception $e) {
-            mtrace('Face matching API error: ' . $e->getMessage() . ' — marking as unverified (fail closed)');
-            return [
-                'match' => false,
-                'confidence' => 0,
-                'face_detected' => true,
-                'error' => $e->getMessage(),
-                'unverified' => true,
-            ];
-        }
+        $confidence = max(0, min(100, (int) $data['confidence']));
+        return [
+            'match' => $confidence >= $threshold,
+            'confidence' => $confidence,
+            'face_detected' => (bool) ($data['face_detected'] ?? true),
+            'threshold' => $threshold,
+            'service' => parse_url($endpoint, PHP_URL_HOST),
+            'model' => isset($data['model']) ? clean_param($data['model'], PARAM_TEXT) : null,
+            'requestid' => isset($data['request_id']) ? clean_param($data['request_id'], PARAM_TEXT) : null,
+            'time' => time(),
+            'error' => null,
+        ];
     }
 
     /**
@@ -205,9 +191,9 @@ class process_image extends \core\task\adhoc_task {
 
         // Determine flag reason.
         if (!$result['face_detected']) {
-            $reason = 'No face detected in webcam image';
+            $reason = get_string('reason_no_face', 'quizaccess_webcamproctor');
         } else {
-            $reason = 'Face match confidence (' . $result['confidence'] . '%) below threshold';
+            $reason = get_string('reason_low_confidence_value', 'quizaccess_webcamproctor', $result['confidence']);
         }
 
         // Update attempt status.
@@ -221,13 +207,17 @@ class process_image extends \core\task\adhoc_task {
 
         // Check if we should block submission.
         if ($settings && $settings->blocksubmission) {
-            $DB->set_field('quizaccess_webcamproctor_attempts', 'submissionblocked', 1,
-                ['id' => $attempt->id]);
+            $DB->set_field(
+                'quizaccess_webcamproctor_attempts',
+                'submissionblocked',
+                1,
+                ['id' => $attempt->id]
+            );
         }
 
         // Send notification if not already sent.
         if (!$attempt->notificationsent) {
-            $this->send_notification($attempt, $image, $result, $settings);
+            $this->send_notification($attempt, $result, $settings);
         }
     }
 
@@ -235,11 +225,10 @@ class process_image extends \core\task\adhoc_task {
      * Send notification about flagged attempt.
      *
      * @param object $attempt The proctoring attempt.
-     * @param object $image The triggering image.
      * @param array $result The match result.
      * @param object $settings Quiz proctoring settings.
      */
-    private function send_notification($attempt, $image, array $result, $settings): void {
+    private function send_notification($attempt, array $result, $settings): void {
         global $DB;
 
         if (!$settings) {
@@ -288,24 +277,29 @@ class process_image extends \core\task\adhoc_task {
         if (!empty($recipients)) {
             // Prepare message content.
             $a = new \stdClass();
-            $a->student = fullname($user);
-            $a->quiz = $quiz->name;
-            $a->course = $course->fullname;
-            $a->confidence = $result['confidence'];
-            $a->reason = $result['face_detected'] ? 'Low confidence match' : 'No face detected';
+            $a->student = s(fullname($user));
+            $a->quiz = s(format_string($quiz->name, true, ['context' => $context]));
+            $a->course = s(format_string($course->fullname, true, ['context' => $context]));
+            $a->confidence = (int) $result['confidence'];
+            $a->reason = s($result['face_detected'] ? get_string('reason_low_confidence', 'quizaccess_webcamproctor') :
+                get_string('reason_no_face', 'quizaccess_webcamproctor'));
             $a->reporturl = (new \moodle_url('/mod/quiz/accessrule/webcamproctor/report.php', [
                 'id' => $cm->id,
                 'attemptid' => $attempt->attemptid,
             ]))->out(false);
 
-            $subject = get_string('notification_subject', 'quizaccess_webcamproctor', $a);
+            $subject = get_string(
+                'notification_subject',
+                'quizaccess_webcamproctor',
+                (object) ['quiz' => format_string($quiz->name, true, ['context' => $context])]
+            );
             $messagehtml = get_string('notification_body', 'quizaccess_webcamproctor', $a);
 
             // Use custom template if provided.
             if (!empty($settings->emailtemplate)) {
                 $messagehtml = str_replace(
                     ['{student}', '{quiz}', '{course}', '{confidence}', '{reason}', '{reporturl}'],
-                    [$a->student, $a->quiz, $a->course, $a->confidence, $a->reason, $a->reporturl],
+                    [$a->student, $a->quiz, $a->course, $a->confidence, $a->reason, s($a->reporturl)],
                     $settings->emailtemplate
                 );
             }
@@ -318,7 +312,7 @@ class process_image extends \core\task\adhoc_task {
                 $eventdata->userfrom = \core_user::get_noreply_user();
                 $eventdata->userto = $recipient;
                 $eventdata->subject = $subject;
-                $eventdata->fullmessage = strip_tags($messagehtml);
+                $eventdata->fullmessage = html_to_text($messagehtml);
                 $eventdata->fullmessageformat = FORMAT_HTML;
                 $eventdata->fullmessagehtml = $messagehtml;
                 $eventdata->smallmessage = $subject;
@@ -335,8 +329,12 @@ class process_image extends \core\task\adhoc_task {
             }
 
             // Mark notification as sent.
-            $DB->set_field('quizaccess_webcamproctor_attempts', 'notificationsent', 1,
-                ['id' => $attempt->id]);
+            $DB->set_field(
+                'quizaccess_webcamproctor_attempts',
+                'notificationsent',
+                1,
+                ['id' => $attempt->id]
+            );
         }
     }
 
@@ -373,7 +371,7 @@ class process_image extends \core\task\adhoc_task {
             $user->middlename = '';
             $user->alternatename = '';
 
-            email_to_user($user, \core_user::get_noreply_user(), $subject, strip_tags($body), $body);
+            email_to_user($user, \core_user::get_noreply_user(), $subject, html_to_text($body), $body);
         }
     }
 
@@ -386,9 +384,17 @@ class process_image extends \core\task\adhoc_task {
     private function mark_image_error(int $imageid, string $error): void {
         global $DB;
 
-        $DB->set_field('quizaccess_webcamproctor_images', 'processstatus', 'error',
-            ['id' => $imageid]);
-        $DB->set_field('quizaccess_webcamproctor_images', 'processresult',
-            json_encode(['error' => $error]), ['id' => $imageid]);
+        $DB->set_field(
+            'quizaccess_webcamproctor_images',
+            'processstatus',
+            'error',
+            ['id' => $imageid]
+        );
+        $DB->set_field(
+            'quizaccess_webcamproctor_images',
+            'processresult',
+            json_encode(['error' => $error]),
+            ['id' => $imageid]
+        );
     }
 }

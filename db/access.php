@@ -24,22 +24,35 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-    'quizaccess/webcamproctor:viewreport' => array(
+$capabilities = [
+    // View the proctoring report, including webcam photos of students.
+    'quizaccess/webcamproctor:viewreport' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
-    'quizaccess/webcamproctor:manageattempts' => array(
+        ],
+    ],
+    // Mark attempts as verified or flagged, and release held attempts.
+    'quizaccess/webcamproctor:manageattempts' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
-);
+        ],
+    ],
+    // See Verify ID selfies and identity documents in the proctoring report.
+    'quizaccess/webcamproctor:viewverifyid' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+];
