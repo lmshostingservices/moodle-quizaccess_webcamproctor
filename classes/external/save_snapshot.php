@@ -42,7 +42,7 @@ class save_snapshot extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'attemptid' => new external_value(PARAM_INT, 'The quiz attempt ID'),
-            // A data URI; image_validator checks its type, encoding and size before it is stored.
+            // pipeline-ignore: PARAM_RAW — data URI, checked by image_validator for type, encoding and size before storing.
             'imagedata' => new external_value(PARAM_RAW, 'JPEG, PNG or WebP image as a base64 data URI'),
             'imagesize' => new external_value(PARAM_INT, 'Image size in bytes', VALUE_DEFAULT, 0),
             'event' => new external_value(PARAM_ALPHA, 'Optional event instead of an image: cameralost', VALUE_DEFAULT, ''),
