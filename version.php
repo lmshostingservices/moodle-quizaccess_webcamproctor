@@ -25,8 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'quizaccess_webcamproctor';
-$plugin->version   = 2026082901;
-$plugin->requires  = 2023042400;   // Moodle 4.2+
-$plugin->supported  = [402, 500];  // Moodle 4.2 to 5.x
+// The version must stay above v2.2.3 (2026060400016), so it keeps the 13-digit format.
+$plugin->version   = 2026112600000;
+$plugin->requires  = 2024100700; // Moodle 4.5.
+$plugin->supported = [405, 503]; // Moodle 4.5 to 5.3.
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.2.4'; // RELEASE RECOVERY: Republished the reviewed authoritative source under a new immutable tag because the historical tag contained a different source tree. No functional changes.
+$plugin->release   = '2.3.0';

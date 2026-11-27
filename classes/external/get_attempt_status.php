@@ -16,14 +16,10 @@
 
 namespace quizaccess_webcamproctor\external;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/externallib.php');
-
-use external_api;
-use external_function_parameters;
-use external_value;
-use external_single_structure;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_single_structure;
+use core_external\external_value;
 
 /**
  * External API for getting proctoring attempt status.
@@ -53,67 +49,35 @@ class get_attempt_status extends external_api {
     public static function execute(int $attemptid): array {
         global $DB, $USER;
 
-        // Validate parameters.
-        $params = self::validate_parameters(self::execute_parameters(), [
-            'attemptid' => $attemptid,
-        ]);
+        $params = self::validate_parameters(self::execute_parameters(), ['attemptid' => $attemptid]);
+        $unknown = [
+            'success' => false,
+            'status' => 'unknown',
+            'snapshotcount' => 0,
+            'flagged' => false,
+            'blocked' => false,
+            'message' => '',
+        ];
 
-        // Get the proctoring attempt record.
-        $proctorattempt = $DB->get_record('quizaccess_webcamproctor_attempts', [
-            'attemptid' => $params['attemptid'],
-        ]);
-
-        if (!$proctorattempt) {
-            return [
-                'success' => false,
-                'status' => 'unknown',
-                'snapshotcount' => 0,
-                'flagged' => false,
-                'blocked' => false,
-                'message' => 'Proctoring session not found',
-            ];
-        }
-
-        // Check permissions - users can only see their own, teachers can see all.
         $quizattempt = $DB->get_record('quiz_attempts', ['id' => $params['attemptid']]);
         if (!$quizattempt) {
-            return [
-                'success' => false,
-                'status' => 'unknown',
-                'snapshotcount' => 0,
-                'flagged' => false,
-                'blocked' => false,
-                'message' => 'Quiz attempt not found',
-            ];
+            return $unknown;
         }
-
-        $cm = get_coursemodule_from_instance('quiz', $quizattempt->quiz);
-        if (!$cm) {
-            return [
-                'success' => false,
-                'status' => 'unknown',
-                'snapshotcount' => 0,
-                'flagged' => false,
-                'blocked' => false,
-                'message' => 'Quiz module not found',
-            ];
-        }
+        $cm = get_coursemodule_from_instance('quiz', $quizattempt->quiz, 0, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
         self::validate_context($context);
 
-        // Check if user has permission.
-        $canview = has_capability('quizaccess/webcamproctor:viewreport', $context) ||
-                   $proctorattempt->userid == $USER->id;
+        // Students can only see their own attempts; staff with the report capability can see all.
+        if (
+            (int) $quizattempt->userid !== (int) $USER->id &&
+                !has_capability('quizaccess/webcamproctor:viewreport', $context)
+        ) {
+            return $unknown;
+        }
 
-        if (!$canview) {
-            return [
-                'success' => false,
-                'status' => 'unknown',
-                'snapshotcount' => 0,
-                'flagged' => false,
-                'blocked' => false,
-                'message' => 'Permission denied',
-            ];
+        $proctorattempt = $DB->get_record('quizaccess_webcamproctor_attempts', ['attemptid' => $params['attemptid']]);
+        if (!$proctorattempt) {
+            return $unknown;
         }
 
         return [
@@ -121,8 +85,8 @@ class get_attempt_status extends external_api {
             'status' => $proctorattempt->status,
             'snapshotcount' => (int) $proctorattempt->snapshotcount,
             'flagged' => ($proctorattempt->status === 'flagged'),
-            'blocked' => ($proctorattempt->submissionblocked == 1),
-            'message' => $proctorattempt->flaggedreason ?? '',
+            'blocked' => ((int) $proctorattempt->submissionblocked === 1),
+            'message' => (string) ($proctorattempt->flaggedreason ?? ''),
         ];
     }
 

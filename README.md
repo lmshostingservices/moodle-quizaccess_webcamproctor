@@ -2,15 +2,33 @@
 
 ## Summary
 
-AI-powered webcam proctoring for Moodle™ quizzes.
+Webcam proctoring for Moodle™ quizzes, with AI face matching and teacher review.
 
 ## Description
 
-AI-powered webcam proctoring for Moodle™ quizzes. Captures baseline photo at quiz start, takes periodic snapshots during attempts, and uses GPT-4o Vision to verify identity. Features green face detection indicator, configurable intervals with random offset, maximum captures limit, teacher notification system, AI Verify ID integration with side-by-side comparison in reports, CSV export, and optional submission blocking.
+Before a proctored quiz starts, students read a plain-language notice about what is recorded, give consent and take a baseline photo. During the attempt the plugin takes webcam snapshots at random times and shows a small "webcam proctoring is on" badge with a self-view. Each snapshot is sent to the face-matching service the site administrator configures and compared with the baseline. A low match flags the attempt for a teacher, who makes every decision. Teachers can optionally hold an attempt until they have reviewed it.
+
+If no face-matching service is configured, or the administrator pauses AI checks, photos are stored as "not checked by AI" and nobody is flagged.
+
+Features: per-quiz settings (interval, threshold, maximum snapshots, hold, notifications), teacher report with photo pop-up, CSV export, optional AI Verify ID columns, backup and restore of settings, privacy export and deletion of photos, and automatic deletion of photos after a retention period.
+
+Supports Moodle 4.5 to 5.3.
+
+## Site settings
+
+Site administration > Plugins > Activity modules > Quiz > Webcam proctoring:
+
+- Face-matching service URL, API key and the processor name shown to students.
+- Pause AI face matching (photos are still taken for teachers, nobody is flagged).
+- Photo retention period (default 90 days).
+
+## Responsible AI
+
+Remote proctoring with face matching is listed as high-risk in the EU AI Act (Annex III 3(d)). This plugin is built so that a person always decides: the AI only flags attempts for review, students are told what happens before they start, the AI can be paused at any time, and the model, threshold and service used for each result are recorded for review.
 
 ## Current Release
 
-Version 2.2.4 republishes the reviewed authoritative source under a new immutable tag because the historical tag contained a different source tree. There are no functional changes in this release.
+Version 2.3.0. See CHANGELOG.md.
 
 ## Licence
 
