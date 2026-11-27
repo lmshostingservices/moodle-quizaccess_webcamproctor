@@ -87,8 +87,8 @@ function xmldb_quizaccess_webcamproctor_upgrade($oldversion) {
     }
 
     // Upgrade to v2.3.0: no schema change. New capabilities, settings and tasks are installed by core.
-    if ($oldversion < 2026112600000) {
-        upgrade_plugin_savepoint(true, 2026112600000, 'quizaccess', 'webcamproctor');
+    if ($oldversion < 2026112700) {
+        upgrade_plugin_savepoint(true, 2026112700, 'quizaccess', 'webcamproctor');
     }
 
     return true;

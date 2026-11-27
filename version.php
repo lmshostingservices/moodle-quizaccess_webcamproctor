@@ -25,9 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'quizaccess_webcamproctor';
-// The version must stay above v2.2.3 (2026060400016), so it keeps the 13-digit format.
-$plugin->version   = 2026112600000;
+$plugin->version   = 2026112700;
 $plugin->requires  = 2024100700; // Moodle 4.5.
 $plugin->supported = [405, 503]; // Moodle 4.5 to 5.3.
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.3.0';
+$plugin->release   = '2.3.1';

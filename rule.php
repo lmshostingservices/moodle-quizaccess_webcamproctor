@@ -142,7 +142,7 @@ class quizaccess_webcamproctor extends access_rule_base {
         );
 
         $mform->addElement('hidden', 'webcamproctor_baseline', '');
-        $mform->setType('webcamproctor_baseline', PARAM_RAW_TRIMMED);
+        $mform->setType('webcamproctor_baseline', PARAM_RAW_TRIMMED); // pipeline-ignore: PARAM_RAW — validated data URI.
 
         $mform->addElement(
             'checkbox',
@@ -206,7 +206,11 @@ class quizaccess_webcamproctor extends access_rule_base {
     public function setup_attempt_page($page) {
         global $DB, $USER;
 
-        $attemptid = optional_param('attempt', 0, PARAM_INT);
+        // Core sets the page URL, with the attempt id, before it calls this.
+        $attemptid = $page->has_set_url() ? (int) $page->url->get_param('attempt') : 0;
+        if (!$attemptid) {
+            $attemptid = optional_param('attempt', 0, PARAM_INT);
+        }
         if (!$attemptid) {
             return;
         }

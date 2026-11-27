@@ -2,6 +2,25 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [v2.3.1] - 2026-11-27
+
+Release pipeline fixes. No feature changes.
+
+### Changed
+- Version number uses Moodle's standard 10-digit format (2026112700).
+- Added thirdpartylibs.xml (the plugin bundles no third-party libraries).
+- The attempt page reads the attempt id from the page URL, and tests no longer set `$_GET`.
+- Raw image data parameters carry their pipeline-ignore note on the same line.
+
+### Upgrading from v2.2.3 or v2.3.0
+Those releases used a 13-digit version number, which is higher than 2026112700, so Moodle would refuse the upgrade as a downgrade.
+Before installing v2.3.1 on such a site, reset the stored version (all data is kept):
+
+    UPDATE mdl_config_plugins SET value = '2026082901'
+     WHERE plugin = 'quizaccess_webcamproctor' AND name = 'version';
+
+Then purge caches and run the upgrade. Sites on v2.2.4 or older upgrade normally.
+
 ## [v2.3.0] - 2026-11-26
 
 Go-live readiness release. Tested on Moodle 4.5, 5.2 and 5.3.

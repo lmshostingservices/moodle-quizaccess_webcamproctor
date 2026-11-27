@@ -28,7 +28,7 @@ Remote proctoring with face matching is listed as high-risk in the EU AI Act (An
 
 ## Current Release
 
-Version 2.3.0. See CHANGELOG.md.
+Version 2.3.1. See CHANGELOG.md.
 
 ## Licence
 

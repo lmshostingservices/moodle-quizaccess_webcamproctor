@@ -82,9 +82,8 @@ final class rule_test extends base_testcase {
         // Core calls this with a null id for a new attempt.
         $rule->notify_preflight_check_passed(null);
 
-        $_GET['attempt'] = $attempt->id;
+        $PAGE->set_url(new \moodle_url('/mod/quiz/attempt.php', ['attempt' => $attempt->id]));
         $rule->setup_attempt_page($PAGE);
-        unset($_GET['attempt']);
 
         $record = $DB->get_record('quizaccess_webcamproctor_attempts', ['attemptid' => $attempt->id], '*', MUST_EXIST);
         $this->assertNotEmpty($record->baselineimageid);
@@ -126,9 +125,8 @@ final class rule_test extends base_testcase {
         // The camera stays off on the error page of a held attempt.
         $page = new \moodle_page();
         $page->set_context(\context_module::instance($this->cm->id));
-        $_GET['attempt'] = $attempt->id;
+        $page->set_url(new \moodle_url('/mod/quiz/attempt.php', ['attempt' => $attempt->id]));
         $this->rule()->setup_attempt_page($page);
-        unset($_GET['attempt']);
         $this->assertStringNotContainsString('quizaccess_webcamproctor/runtime', $page->requires->get_end_code());
         $this->assertNotEmpty((new access_manager(quiz_settings::create($this->quiz->id), time(), false))->prevent_access());
 
